@@ -58,6 +58,8 @@ import type { LightboxImage } from "@shared/editor/lib/Lightbox";
 import { LightboxImageFactory } from "@shared/editor/lib/Lightbox";
 import Lightbox from "~/components/Lightbox";
 import { anchorPlugin } from "@shared/editor/plugins/AnchorPlugin";
+import { registerService } from "@shared/utils/ServiceRegistry";
+import { summarizeDocument } from "~/utils/ai";
 
 export type Props = {
   /** An optional identifier for the editor context. It is used to persist local settings */
@@ -240,6 +242,10 @@ export class Editor extends React.PureComponent<
   public componentDidMount() {
     this.init();
     window.addEventListener("theme-changed", this.dispatchThemeChanged);
+
+    registerService("ai", {
+      summarizeDocument,
+    });
 
     if (this.props.scrollTo) {
       void this.scrollToAnchor(this.props.scrollTo);

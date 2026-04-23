@@ -97,6 +97,7 @@ import {
   loadPublicShare,
   getAllIdsInSharedTree,
 } from "@server/commands/shareLoader";
+import { createAIClient } from "@server/services/ai";
 
 const router = new Router();
 
@@ -2165,6 +2166,53 @@ router.post(
     ctx.body = {
       success: true,
     };
+  }
+);
+
+router.post(
+  "documents.summarize",
+  auth(),
+  validate(T.DocumentsSummarizeSchema),
+  async (ctx: APIContext<T.DocumentsSummarizeReq>) => {
+    const { id } = ctx.input.body;
+    const { user } = ctx.state.auth;
+
+    const document = await documentLoader({
+      id,
+      user,
+    });
+
+    authorize(user, "read", document);
+
+    const aiClient = createAIClient();
+    if (!aiClient) {
+      throw new InvalidRequestError(
+        "AI services are not configured. Please contact your administrator."
+      );
+    }
+
+    const plainText = DocumentHelper.toPlainText(document);
+    
+    if (plainText.trim().length === 0) {
+      throw new InvalidRequestError("Document is empty, cannot generate summary.");
+    }
+
+    try {
+      const result = await aiClient.summarize(plainText);
+
+      ctx.body = {
+        data: {
+          summary: result.summary,
+          provider: result.provider,
+          model: result.model,
+        },
+      };
+    } catch (error) {
+      Logger.error("ai", "Failed to generate document summary", error);
+      throw new InvalidRequestError(
+        error instanceof Error ? error.message : "Failed to generate summary"
+      );
+    }
   }
 );
 

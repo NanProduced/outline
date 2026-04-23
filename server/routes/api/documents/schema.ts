@@ -154,6 +154,12 @@ export const DocumentsInfoSchema = BaseSchema.extend({
 
 export type DocumentsInfoReq = z.infer<typeof DocumentsInfoSchema>;
 
+export const DocumentsSummarizeSchema = BaseSchema.extend({
+  body: BaseIdSchema.extend({}),
+});
+
+export type DocumentsSummarizeReq = z.infer<typeof DocumentsSummarizeSchema>;
+
 export const DocumentsInsightsSchema = BaseSchema.extend({
   body: BaseIdSchema.extend({
     /** Start of the insights window (inclusive). Defaults to 30 days ago. */

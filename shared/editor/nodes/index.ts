@@ -15,6 +15,7 @@ import TemplatePlaceholder from "../marks/Placeholder";
 import Strikethrough from "../marks/Strikethrough";
 import Underline from "../marks/Underline";
 import Attachment from "./Attachment";
+import AISummaryBlock from "./AISummaryBlock";
 import Blockquote from "./Blockquote";
 import BulletList from "./BulletList";
 import CheckboxItem from "./CheckboxItem";
@@ -109,6 +110,7 @@ export const richExtensions: Nodes = [
   Attachment,
   Video,
   Notice,
+  AISummaryBlock,
   Heading,
   HorizontalRule,
   Highlight,

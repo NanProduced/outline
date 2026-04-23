@@ -1,4 +1,4 @@
-import { DocumentIcon, ShapesIcon } from "outline-icons";
+import { DocumentIcon, ShapesIcon, SparklesIcon } from "outline-icons";
 import cloneDeep from "lodash/cloneDeep";
 import { observer } from "mobx-react";
 import { useCallback, useMemo } from "react";
@@ -15,6 +15,45 @@ import { useEditor } from "./EditorContext";
 import type { Props as SuggestionsMenuProps } from "./SuggestionsMenu";
 import SuggestionsMenu from "./SuggestionsMenu";
 import SuggestionsMenuItem from "./SuggestionsMenuItem";
+
+const MIN_WORD_COUNT_FOR_AI_SUMMARY = 200;
+
+/**
+ * Hook that returns an AI summary menu item, or undefined if the document
+ * does not have enough content.
+ */
+function useAISummaryMenuItem(): MenuItem | undefined {
+  const { t } = useTranslation();
+  const editor = useEditor();
+
+  return useMemo(() => {
+    let wordCount = 0;
+    try {
+      const plainText = editor.getPlainText();
+      wordCount = plainText.trim().split(/\s+/).filter(Boolean).length;
+    } catch {
+        wordCount = 0;
+      }
+
+    if (wordCount < MIN_WORD_COUNT_FOR_AI_SUMMARY) {
+      return undefined;
+    }
+
+    return {
+      name: "ai_summary_block",
+      title: t("AI Summary"),
+      icon: <SparklesIcon />,
+      keywords: "ai summary summarize",
+      onClick: () => {
+        const documentId = editor.props.id;
+        const command = editor.commands.ai_summary_block;
+        if (command) {
+          command({ documentId });
+        }
+      },
+    } satisfies MenuItem;
+  }, [editor, t]);
+}
 
 /**
  * Hook that returns a template menu item with children for inserting template
@@ -111,16 +150,22 @@ function BlockMenu(props: Props) {
   const dictionary = useDictionary();
   const { elementRef } = useEditor();
   const templateMenuItem = useTemplateMenuItem();
+  const aiSummaryMenuItem = useAISummaryMenuItem();
 
   const items = useMemo(() => {
     const baseItems = getMenuItems(dictionary, elementRef);
+    let result = [...baseItems];
 
-    if (!templateMenuItem) {
-      return baseItems;
+    if (aiSummaryMenuItem) {
+      result = [...result, { name: "separator" } as MenuItem, aiSummaryMenuItem];
     }
 
-    return [...baseItems, { name: "separator" } as MenuItem, templateMenuItem];
-  }, [dictionary, elementRef, templateMenuItem]);
+    if (templateMenuItem) {
+      result = [...result, { name: "separator" } as MenuItem, templateMenuItem];
+    }
+
+    return result;
+  }, [dictionary, elementRef, aiSummaryMenuItem, templateMenuItem]);
 
   const renderMenuItem = useCallback(
     (item, _index, options) => (

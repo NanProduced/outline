@@ -781,6 +781,54 @@ export class Environment {
     this.toOptionalString(environment.SEARCH_PROVIDER) ?? "postgres";
 
   /**
+   * The AI provider to use for AI features like document summarization.
+   * Supported values: "openai", "anthropic"
+   */
+  @IsOptional()
+  @IsIn(["openai", "anthropic"])
+  public AI_PROVIDER = this.toOptionalString(environment.AI_PROVIDER);
+
+  /**
+   * The API key for the AI provider. Required if AI_PROVIDER is set.
+   */
+  @IsOptional()
+  public AI_API_KEY = this.toOptionalString(environment.AI_API_KEY);
+
+  /**
+   * Optional custom endpoint for the AI provider. Useful for self-hosted
+   * or alternative API endpoints.
+   */
+  @IsOptional()
+  @IsUrl({
+    protocols: ["http", "https"],
+    require_protocol: true,
+    require_tld: false,
+  })
+  public AI_ENDPOINT = this.toOptionalString(environment.AI_ENDPOINT);
+
+  /**
+   * The model to use for AI operations. If not specified, a default model
+   * will be used based on the provider.
+   */
+  @IsOptional()
+  public AI_MODEL = this.toOptionalString(environment.AI_MODEL);
+
+  /**
+   * The maximum number of tokens to generate in AI responses.
+   */
+  @IsOptional()
+  @IsNumber()
+  public AI_MAX_TOKENS = this.toOptionalNumber(environment.AI_MAX_TOKENS);
+
+  /**
+   * The temperature to use for AI responses, between 0 and 2.
+   * Lower values make the output more deterministic, higher values more random.
+   */
+  @IsOptional()
+  @IsNumber()
+  public AI_TEMPERATURE = this.toOptionalNumber(environment.AI_TEMPERATURE);
+
+  /**
    * The product name
    */
   @Public
